@@ -1,0 +1,917 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ระบบจำแนกพิกัดศุลกากรด้วย AI — ตัวอย่างสาธิต</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#F3F5F6;
+    --surface:#FFFFFF;
+    --surface-2:#EAEEF0;
+    --ink:#172436;
+    --muted:#6E7B89;
+    --line:#DDE3E7;
+    --stamp:#B5402E;
+    --stamp-ink:#8C2F21;
+    --gold:#C8954A;
+    --confidence:#2E7A5C;
+    --confidence-bg:#E6F1EC;
+    --radius-lg:18px;
+    --radius-md:12px;
+    --radius-sm:8px;
+    --font-th:'Sarabun',sans-serif;
+    --font-mono:'JetBrains Mono',monospace;
+    --max:1120px;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:var(--font-th);
+    background:var(--bg);
+    color:var(--ink);
+    line-height:1.7;
+    -webkit-font-smoothing:antialiased;
+  }
+  img,svg{display:block;}
+  .container{max-width:var(--max);margin:0 auto;padding:0 28px;}
+
+  /* top accent bar */
+  .accent-bar{height:4px;width:100%;background:linear-gradient(90deg,var(--stamp) 0%, var(--gold) 55%, var(--confidence) 100%);}
+
+  /* ---------- header ---------- */
+  header{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,0.86);
+    backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:16px 28px;max-width:var(--max);margin:0 auto;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:600;font-size:18px;letter-spacing:.2px;}
+  .brand .seal{width:34px;height:34px;flex:none;}
+  .brand small{display:block;font-family:var(--font-mono);font-size:11px;font-weight:400;color:var(--muted);letter-spacing:.06em;}
+  .nav-links{display:flex;gap:28px;align-items:center;}
+  .nav-links a{color:var(--ink);text-decoration:none;font-size:15px;opacity:.78;transition:opacity .2s;}
+  .nav-links a:hover{opacity:1;}
+  .nav-cta{
+    background:var(--ink);color:#fff;border:none;border-radius:999px;
+    padding:10px 20px;font-family:var(--font-th);font-size:15px;font-weight:500;
+    cursor:pointer;transition:background .2s;
+  }
+  .nav-cta:hover{background:var(--stamp);}
+  @media (max-width:760px){ .nav-links{display:none;} }
+
+  /* ---------- hero ---------- */
+  .hero{position:relative;overflow:hidden;padding:84px 0 56px;}
+  .hero-ring{
+    position:absolute;right:-180px;top:-180px;width:480px;height:480px;
+    border:1px solid var(--line);border-radius:50%;
+  }
+  .hero-ring.ring2{right:-90px;top:-90px;width:300px;height:300px;border-color:#E7DCC9;}
+  .eyebrow{
+    font-family:var(--font-mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--gold);font-weight:600;margin:0 0 18px;
+    opacity:0;animation:fadeUp .6s ease forwards;animation-delay:.05s;
+  }
+  .hero h1{
+    font-size:clamp(32px,5vw,52px);line-height:1.25;font-weight:700;margin:0 0 20px;max-width:18ch;
+    opacity:0;animation:fadeUp .6s ease forwards;animation-delay:.15s;
+  }
+  .hero p{
+    font-size:17px;color:var(--muted);max-width:62ch;margin:0 0 36px;
+    opacity:0;animation:fadeUp .6s ease forwards;animation-delay:.28s;
+  }
+  .pipeline-strip{
+    display:flex;align-items:center;gap:0;flex-wrap:wrap;
+    opacity:0;animation:fadeUp .6s ease forwards;animation-delay:.4s;
+  }
+  .pipeline-strip .ps-item{display:flex;align-items:center;gap:10px;padding:10px 0;}
+  .pipeline-strip .ps-num{
+    font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--ink);
+    width:30px;height:30px;border:1px solid var(--line);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;flex:none;background:var(--surface);
+  }
+  .pipeline-strip .ps-label{font-size:14px;color:var(--ink);font-weight:500;white-space:nowrap;}
+  .pipeline-strip .ps-line{width:36px;height:1px;background:var(--line);margin:0 14px;}
+  @media (max-width:760px){ .pipeline-strip .ps-line{display:none;} .pipeline-strip{gap:14px;} }
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+
+  /* ---------- section heads ---------- */
+  .section{padding:56px 0;}
+  .section-head{margin-bottom:36px;}
+  .section-head .eyebrow{margin-bottom:10px;}
+  .section-head h2{font-size:clamp(24px,3.4vw,34px);font-weight:700;margin:0 0 10px;}
+  .section-head p{color:var(--muted);font-size:15.5px;max-width:64ch;margin:0;}
+
+  /* ---------- demo layout ---------- */
+  .step-rail{display:flex;gap:0;margin-bottom:36px;flex-wrap:wrap;}
+  .step{display:flex;align-items:center;gap:10px;padding-right:22px;margin-right:22px;border-right:1px solid var(--line);}
+  .step:last-child{border-right:none;margin-right:0;padding-right:0;}
+  .step .step-dot{
+    width:26px;height:26px;border-radius:50%;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-size:12px;font-weight:600;
+    border:1.5px solid var(--line);color:var(--muted);background:var(--surface);
+    transition:all .35s ease;
+  }
+  .step .step-label{font-size:13.5px;color:var(--muted);transition:color .35s ease;font-weight:500;}
+  .step.is-active .step-dot{border-color:var(--gold);color:var(--gold);background:#FBF4E7;}
+  .step.is-active .step-label{color:var(--ink);}
+  .step.is-done .step-dot{border-color:var(--confidence);color:#fff;background:var(--confidence);}
+  .step.is-done .step-label{color:var(--ink);}
+
+  .demo-grid{display:grid;grid-template-columns:360px 1fr;gap:28px;align-items:start;}
+  @media (max-width:860px){ .demo-grid{grid-template-columns:1fr;} }
+
+  .card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);
+    padding:26px;
+  }
+  .card-label{
+    font-family:var(--font-mono);font-size:11.5px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);margin:0 0 16px;font-weight:600;
+  }
+
+  /* input card */
+  .photo-frame{
+    border:1.5px dashed var(--line);border-radius:var(--radius-md);
+    aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;
+    margin-bottom:18px;background:var(--surface-2);position:relative;overflow:hidden;
+  }
+  .photo-frame svg{width:62%;}
+  .photo-frame .photo-caption{
+    position:absolute;bottom:10px;left:0;right:0;text-align:center;
+    font-family:var(--font-mono);font-size:11px;color:var(--muted);
+  }
+  .field{margin-bottom:12px;}
+  .field label{display:block;font-size:12.5px;color:var(--muted);margin-bottom:5px;}
+  .field .value{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:var(--radius-sm);
+    padding:10px 12px;font-size:14.5px;font-weight:500;
+  }
+  .field .value.mono{font-family:var(--font-mono);font-size:14px;}
+  .analyze-btn{
+    width:100%;margin-top:8px;background:var(--ink);color:#fff;border:none;
+    border-radius:999px;padding:13px 20px;font-family:var(--font-th);font-size:15.5px;font-weight:600;
+    cursor:pointer;transition:background .2s,transform .1s;display:flex;align-items:center;justify-content:center;gap:8px;
+  }
+  .analyze-btn:hover{background:var(--stamp);}
+  .analyze-btn:active{transform:scale(.99);}
+  .analyze-btn:disabled{opacity:.6;cursor:default;}
+  .demo-note{font-size:12px;color:var(--muted);text-align:center;margin-top:10px;}
+
+  /* result area states */
+  .result-area{position:relative;min-height:440px;}
+  .state{display:none;}
+  .state.is-visible{display:block;animation:fadeUp .5s ease;}
+
+  /* pipeline diagram (empty + processing) */
+  .pipeline-diagram{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);
+    padding:40px 26px;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:440px;text-align:center;
+  }
+  .pipe-nodes{display:flex;align-items:center;gap:0;margin-bottom:28px;flex-wrap:wrap;justify-content:center;}
+  .pipe-node{display:flex;flex-direction:column;align-items:center;gap:10px;width:118px;}
+  .pipe-node .pipe-icon{
+    width:52px;height:52px;border-radius:50%;border:1.5px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--muted);
+    transition:all .4s ease;background:var(--surface-2);
+  }
+  .pipe-node .pipe-icon svg{width:24px;height:24px;}
+  .pipe-node .pipe-text{font-size:12.5px;color:var(--muted);font-weight:500;line-height:1.4;}
+  .pipe-connector{width:34px;height:1px;background:var(--line);flex:none;margin-top:-30px;}
+  .pipe-node.is-active .pipe-icon{
+    border-color:var(--gold);color:var(--gold);background:#FBF4E7;
+    animation:pulse 1.1s ease-in-out infinite;
+  }
+  .pipe-node.is-active .pipe-text{color:var(--ink);}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(200,149,74,.35);}50%{box-shadow:0 0 0 8px rgba(200,149,74,0);}}
+
+  .pipeline-diagram h3{font-size:17px;font-weight:600;margin:0 0 8px;}
+  .pipeline-diagram p{color:var(--muted);font-size:14px;margin:0;max-width:36ch;}
+  .status-text{
+    font-family:var(--font-mono);font-size:13px;color:var(--gold);margin-top:18px;min-height:20px;
+  }
+  .progress-track{width:240px;height:4px;border-radius:99px;background:var(--surface-2);margin-top:16px;overflow:hidden;}
+  .progress-fill{height:100%;width:0%;background:var(--gold);transition:width .35s ease;border-radius:99px;}
+
+  /* output state */
+  .output-top{display:flex;justify-content:space-between;align-items:flex-start;gap:20px;margin-bottom:22px;flex-wrap:wrap;}
+  .output-top .result-main h3{font-size:13px;color:var(--muted);margin:0 0 6px;font-weight:500;letter-spacing:.04em;}
+  .output-top .result-main .hs-code{font-family:var(--font-mono);font-size:34px;font-weight:600;letter-spacing:.02em;}
+  .output-top .result-main .hs-desc{font-size:14.5px;color:var(--muted);margin-top:6px;max-width:46ch;}
+
+  /* stamp */
+  .stamp{
+    width:118px;height:118px;border-radius:50%;flex:none;
+    border:3px solid var(--stamp);position:relative;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    color:var(--stamp);transform:rotate(-9deg) scale(.6);opacity:0;
+    animation:stampIn .6s cubic-bezier(.2,1.4,.4,1) forwards;animation-delay:.15s;
+  }
+  .stamp::before{
+    content:'';position:absolute;inset:7px;border:1px solid var(--stamp);border-radius:50%;
+  }
+  .stamp .stamp-top{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;margin-top:14px;}
+  .stamp .stamp-code{font-family:var(--font-mono);font-size:15px;font-weight:700;margin:4px 0;}
+  .stamp .stamp-bottom{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.08em;text-align:center;line-height:1.3;margin-bottom:12px;}
+  @keyframes stampIn{
+    0%{opacity:0;transform:rotate(-22deg) scale(1.5);}
+    60%{opacity:1;transform:rotate(-6deg) scale(.95);}
+    100%{opacity:1;transform:rotate(-9deg) scale(1);}
+  }
+
+  .candidates{margin:18px 0 14px;}
+  .candidate{
+    display:flex;align-items:center;gap:14px;padding:14px 16px;
+    border:1px solid var(--line);border-radius:var(--radius-md);
+    margin-bottom:10px;cursor:pointer;transition:all .2s;background:var(--surface);
+  }
+  .candidate:hover{border-color:var(--gold);}
+  .candidate.is-selected{border-color:var(--gold);background:#FBF4E7;}
+  .candidate-rank{
+    width:26px;height:26px;border-radius:50%;flex:none;
+    display:flex;align-items:center;justify-content:center;
+    font-family:var(--font-mono);font-size:12px;font-weight:600;
+    background:var(--surface-2);color:var(--muted);transition:all .2s;
+  }
+  .candidate.is-selected .candidate-rank{background:var(--gold);color:#fff;}
+  .candidate-main{flex:1;min-width:0;}
+  .candidate-code{font-family:var(--font-mono);font-size:15px;font-weight:600;}
+  .candidate-desc{font-size:12.5px;color:var(--muted);margin-top:3px;}
+  .candidate-score{display:flex;align-items:center;gap:10px;flex:none;width:120px;}
+  .candidate-bar{flex:1;height:6px;border-radius:99px;background:var(--surface-2);overflow:hidden;}
+  .candidate-bar-fill{height:100%;width:0%;background:var(--confidence);border-radius:99px;transition:width 1s cubic-bezier(.3,.8,.3,1);}
+  .candidate-pct{font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--confidence);width:34px;text-align:right;}
+  .candidate-reason{font-size:13px;color:var(--muted);background:var(--surface-2);border-radius:var(--radius-sm);padding:12px 14px;margin:0 0 8px;line-height:1.6;}
+  .candidate-hint{font-size:12px;color:var(--muted);margin:0 0 4px;}
+  @media (max-width:480px){
+    .candidate{flex-wrap:wrap;}
+    .candidate-score{width:100%;margin-top:6px;}
+  }
+
+  .duty-note{
+    font-size:12.5px;color:var(--gold);background:#FBF4E7;border-radius:var(--radius-sm);
+    padding:10px 14px;margin:14px 0 0;display:none;line-height:1.6;
+  }
+
+  .tax-card{border-top:1px solid var(--line);padding-top:22px;}
+  .tax-card .card-label{margin-bottom:14px;}
+  .tax-table{width:100%;border-collapse:collapse;font-size:14.5px;}
+  .tax-table tr{border-bottom:1px solid var(--line);}
+  .tax-table tr:last-child{border-bottom:none;}
+  .tax-table td{padding:10px 0;}
+  .tax-table td:first-child{color:var(--muted);}
+  .tax-table td:last-child{text-align:right;font-family:var(--font-mono);font-weight:500;}
+  .tax-table tr.is-total td{padding-top:14px;font-weight:600;}
+  .tax-table tr.is-total td:last-child{font-size:17px;color:var(--stamp);}
+  .tax-source{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6;}
+  .tax-source a{color:var(--muted);text-decoration:underline;}
+
+  /* chat */
+  .chat-card{margin-top:24px;}
+  .chat-messages{display:flex;flex-direction:column;gap:12px;margin-bottom:16px;}
+  .msg{max-width:82%;padding:11px 15px;border-radius:14px;font-size:14.5px;line-height:1.65;}
+  .msg.ai{background:var(--surface-2);border-radius:14px 14px 14px 4px;align-self:flex-start;}
+  .msg.user{background:var(--ink);color:#fff;border-radius:14px 14px 4px 14px;align-self:flex-end;}
+  .typing{display:flex;gap:4px;align-self:flex-start;padding:13px 15px;background:var(--surface-2);border-radius:14px 14px 14px 4px;}
+  .typing span{width:6px;height:6px;border-radius:50%;background:var(--muted);animation:blink 1.2s infinite;}
+  .typing span:nth-child(2){animation-delay:.2s;}
+  .typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes blink{0%,80%,100%{opacity:.25;}40%{opacity:1;}}
+
+  .chip-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;}
+  .chip{
+    border:1px solid var(--line);background:var(--surface);border-radius:999px;
+    padding:8px 14px;font-size:13px;color:var(--ink);cursor:pointer;transition:all .2s;font-family:var(--font-th);
+  }
+  .chip:hover{border-color:var(--gold);color:var(--gold);}
+  .chip:disabled{opacity:.4;cursor:default;}
+  .chat-input-row{display:flex;gap:8px;}
+  .chat-input-row input{
+    flex:1;border:1px solid var(--line);border-radius:999px;padding:11px 16px;
+    font-family:var(--font-th);font-size:14.5px;background:var(--surface-2);
+  }
+  .chat-input-row input:focus{outline:1.5px solid var(--gold);}
+  .chat-input-row button{
+    border:none;background:var(--ink);color:#fff;border-radius:999px;width:42px;height:42px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;flex:none;transition:background .2s;
+  }
+  .chat-input-row button:hover{background:var(--stamp);}
+
+  .replay-row{text-align:center;margin-top:22px;}
+  .replay-btn{
+    background:none;border:1px solid var(--line);border-radius:999px;padding:9px 20px;
+    font-family:var(--font-th);font-size:13.5px;color:var(--muted);cursor:pointer;transition:all .2s;
+  }
+  .replay-btn:hover{border-color:var(--ink);color:var(--ink);}
+
+  /* ---------- features ---------- */
+  .features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+  @media (max-width:860px){ .features-grid{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:600px){ .features-grid{grid-template-columns:1fr;} }
+  .feature-card{
+    background:var(--surface);border:1px solid var(--line);border-radius:var(--radius-lg);
+    padding:24px;
+  }
+  .feature-card .f-icon{
+    width:42px;height:42px;border-radius:50%;background:var(--surface-2);
+    display:flex;align-items:center;justify-content:center;margin-bottom:16px;color:var(--ink);
+  }
+  .feature-card .f-icon svg{width:20px;height:20px;}
+  .feature-card h4{font-size:15.5px;font-weight:600;margin:0 0 8px;}
+  .feature-card p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.65;}
+
+  /* ---------- footer ---------- */
+  footer{border-top:1px solid var(--line);padding:32px 0;margin-top:40px;}
+  footer .container{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;}
+  footer .f-left{font-size:13px;color:var(--muted);max-width:60ch;line-height:1.7;}
+  footer .f-right{font-family:var(--font-mono);font-size:12px;color:var(--muted);white-space:nowrap;}
+  footer a{color:var(--muted);}
+</style>
+</head>
+<body>
+
+<div class="accent-bar"></div>
+
+<header>
+  <div class="nav">
+    <div class="brand">
+      <svg class="seal" viewBox="0 0 40 40" fill="none">
+        <circle cx="20" cy="20" r="18" stroke="#172436" stroke-width="1.5"/>
+        <circle cx="20" cy="20" r="13" stroke="#C8954A" stroke-width="1.5"/>
+        <path d="M14 20.5L18 24.5L26 15.5" stroke="#172436" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <div>
+        ระบบจำแนกพิกัดศุลกากรด้วย AI
+        <small>AI HS CODE CLASSIFIER — DEMO</small>
+      </div>
+    </div>
+    <nav class="nav-links">
+      <a href="#how">วิธีการทำงาน</a>
+      <a href="#demo">ตัวอย่างผลลัพธ์</a>
+      <a href="#receive">สิ่งที่จะได้รับ</a>
+    </nav>
+    <button class="nav-cta" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">ดูตัวอย่างการทำงาน</button>
+  </div>
+</header>
+
+<section class="hero" id="how">
+  <div class="hero-ring"></div>
+  <div class="hero-ring ring2"></div>
+  <div class="container">
+    <p class="eyebrow">ตัวอย่างเพื่อการนำเสนอลูกค้า</p>
+    <h1>จากภาพและรายละเอียดสินค้า สู่รหัส HS และยอดภาษีที่ต้องชำระ ภายในไม่กี่วินาที</h1>
+    <p>ตัวอย่างด้านล่างสาธิตการทำงานของระบบทั้งกระบวนการ ตั้งแต่รับข้อมูลสินค้า วิเคราะห์ด้วยแบบจำลอง AI เทียบกับฐานความรู้พิกัดอัตราศุลกากร จนถึงคำนวณภาษีอากรที่ต้องชำระ โครงสร้างพิกัดและอัตราอากรในตัวอย่างนี้อ้างอิงตามระบบ Integrated Tariff Database ของกรมศุลกากร (itd.customs.go.th)</p>
+    <div class="pipeline-strip">
+      <div class="ps-item"><span class="ps-num">1</span><span class="ps-label">รับข้อมูลสินค้า</span></div>
+      <span class="ps-line"></span>
+      <div class="ps-item"><span class="ps-num">2</span><span class="ps-label">AI วิเคราะห์ตาม HS</span></div>
+      <span class="ps-line"></span>
+      <div class="ps-item"><span class="ps-num">3</span><span class="ps-label">ผลลัพธ์และภาษี</span></div>
+      <span class="ps-line"></span>
+      <div class="ps-item"><span class="ps-num">4</span><span class="ps-label">ปรับปรุงผลลัพธ์</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="demo">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">ตัวอย่างการทำงานแบบ step by step</p>
+      <h2>ลองกดวิเคราะห์สินค้าตัวอย่างหนึ่งรายการ</h2>
+      <p>ตัวอย่างนี้ใช้สินค้าจริงหนึ่งรายการเดินผ่านทั้งกระบวนการ เพื่อให้เห็นรูปแบบผลลัพธ์ที่ลูกค้าจะได้รับจากระบบจริง</p>
+    </div>
+
+    <div class="step-rail">
+      <div class="step is-active" id="step1"><span class="step-dot">01</span><span class="step-label">รับข้อมูลสินค้า</span></div>
+      <div class="step" id="step2"><span class="step-dot">02</span><span class="step-label">AI วิเคราะห์ตาม HS</span></div>
+      <div class="step" id="step3"><span class="step-dot">03</span><span class="step-label">ผลลัพธ์และภาษี</span></div>
+      <div class="step" id="step4"><span class="step-dot">04</span><span class="step-label">ปรับปรุงผลลัพธ์</span></div>
+    </div>
+
+    <div class="demo-grid">
+      <!-- input card -->
+      <div class="card">
+        <p class="card-label">ข้อมูลสินค้าตัวอย่าง</p>
+        <div class="photo-frame">
+          <svg viewBox="0 0 200 140" fill="none" stroke="#6E7B89" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="55" cy="100" r="28"/>
+            <circle cx="150" cy="100" r="28"/>
+            <path d="M55 100 L95 45 L150 100"/>
+            <path d="M95 45 L80 100"/>
+            <path d="M95 45 L112 45"/>
+            <path d="M150 100 L168 100"/>
+            <path d="M55 100 L40 100"/>
+          </svg>
+          <span class="photo-caption">ภาพสินค้าที่ผู้ใช้อัปโหลด</span>
+        </div>
+        <div class="field">
+          <label>ชื่อสินค้า</label>
+          <div class="value">จักรยานเสือหมอบ 2 ล้อ ไม่มีเครื่องยนต์</div>
+        </div>
+        <div class="field">
+          <label>ยี่ห้อ (ตัวอย่าง)</label>
+          <div class="value">VELOCYCLE</div>
+        </div>
+        <div class="field">
+          <label>ประเทศต้นทาง</label>
+          <div class="value">จีน</div>
+        </div>
+        <div class="field">
+          <label>มูลค่าสินค้า (ราคา CIF)</label>
+          <div class="value mono">12,000.00 บาท</div>
+        </div>
+        <button class="analyze-btn" id="analyzeBtn">
+          วิเคราะห์ด้วย AI
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </button>
+        <p class="demo-note">ใช้ข้อมูลตัวอย่างเพื่อสาธิตการทำงานเท่านั้น</p>
+      </div>
+
+      <!-- result area -->
+      <div class="result-area">
+
+        <!-- empty state -->
+        <div class="state is-visible" id="stateEmpty">
+          <div class="pipeline-diagram">
+            <div class="pipe-nodes">
+              <div class="pipe-node">
+                <div class="pipe-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M8 5l1.5-2h5L16 5"/></svg>
+                </div>
+                <div class="pipe-text">รับข้อมูลสินค้า</div>
+              </div>
+              <div class="pipe-connector"></div>
+              <div class="pipe-node">
+                <div class="pipe-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>
+                </div>
+                <div class="pipe-text">AI Engine วิเคราะห์ตามกฎ HS</div>
+              </div>
+              <div class="pipe-connector"></div>
+              <div class="pipe-node">
+                <div class="pipe-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+                </div>
+                <div class="pipe-text">ฐานความรู้ AHTN 2022</div>
+              </div>
+              <div class="pipe-connector"></div>
+              <div class="pipe-node">
+                <div class="pipe-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+                </div>
+                <div class="pipe-text">ผลลัพธ์ + ภาษีอากร</div>
+              </div>
+            </div>
+            <h3>ผลลัพธ์จะปรากฏที่นี่</h3>
+            <p>กดปุ่ม “วิเคราะห์ด้วย AI” ทางด้านซ้ายเพื่อเริ่มตัวอย่างการทำงาน</p>
+          </div>
+        </div>
+
+        <!-- processing state -->
+        <div class="state" id="stateProcessing">
+          <div class="pipeline-diagram">
+            <div class="pipe-nodes">
+              <div class="pipe-node is-done-node">
+                <div class="pipe-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M8 5l1.5-2h5L16 5"/></svg>
+                </div>
+                <div class="pipe-text">รับข้อมูลสินค้า</div>
+              </div>
+              <div class="pipe-connector"></div>
+              <div class="pipe-node is-active" id="nodeEngine">
+                <div class="pipe-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v3M15 2v3M9 19v3M15 19v3M2 9h3M2 15h3M19 9h3M19 15h3"/></svg>
+                </div>
+                <div class="pipe-text">AI Engine วิเคราะห์ตามกฎ HS</div>
+              </div>
+              <div class="pipe-connector"></div>
+              <div class="pipe-node is-active" id="nodeKB">
+                <div class="pipe-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg>
+                </div>
+                <div class="pipe-text">ฐานความรู้ AHTN 2022</div>
+              </div>
+              <div class="pipe-connector"></div>
+              <div class="pipe-node">
+                <div class="pipe-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+                </div>
+                <div class="pipe-text">ผลลัพธ์ + ภาษีอากร</div>
+              </div>
+            </div>
+            <h3>กำลังวิเคราะห์...</h3>
+            <p class="status-text" id="statusText">กำลังอ่านข้อมูลสินค้าและรูปภาพ...</p>
+            <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+          </div>
+        </div>
+
+        <!-- output state -->
+        <div class="state" id="stateOutput">
+          <div class="card">
+            <div class="output-top">
+              <div class="result-main">
+                <h3>รหัส HS ที่เลือก</h3>
+                <div class="hs-code" id="hsCode">8712.00.30</div>
+                <div class="hs-desc" id="hsDesc">จักรยานสองล้อ ไม่มีเครื่องยนต์ช่วยขับเคลื่อน — อยู่ในพิกัดประเภท 87.12 จักรยานและรถถีบอื่น ๆ ที่ไม่มีเครื่องยนต์</div>
+              </div>
+              <div class="stamp" id="stamp">
+                <div class="stamp-top">AHTN 2022</div>
+                <div class="stamp-code" id="stampCode">8712.00.30</div>
+                <div class="stamp-bottom">ผลการจำแนก<br>ประเภทเบื้องต้น</div>
+              </div>
+            </div>
+
+            <div class="candidates">
+              <p class="card-label">รหัส HS ที่เป็นไปได้ (เรียงตามความเหมือน)</p>
+
+              <div class="candidate is-selected" onclick="selectCandidate(0)">
+                <div class="candidate-rank">1</div>
+                <div class="candidate-main">
+                  <div class="candidate-code">8712.00.30</div>
+                  <div class="candidate-desc">จักรยานสองล้อ ไม่มีเครื่องยนต์ช่วยขับเคลื่อน</div>
+                </div>
+                <div class="candidate-score">
+                  <div class="candidate-bar"><div class="candidate-bar-fill" id="bar0"></div></div>
+                  <div class="candidate-pct" id="pct0">0%</div>
+                </div>
+              </div>
+
+              <div class="candidate" onclick="selectCandidate(1)">
+                <div class="candidate-rank">2</div>
+                <div class="candidate-main">
+                  <div class="candidate-code">8712.00.90</div>
+                  <div class="candidate-desc">จักรยาน/รถถีบอื่น ๆ ในพิกัด 87.12 ที่ไม่ใช่สองล้อมาตรฐาน</div>
+                </div>
+                <div class="candidate-score">
+                  <div class="candidate-bar"><div class="candidate-bar-fill" id="bar1"></div></div>
+                  <div class="candidate-pct" id="pct1">0%</div>
+                </div>
+              </div>
+
+              <div class="candidate" onclick="selectCandidate(2)">
+                <div class="candidate-rank">3</div>
+                <div class="candidate-main">
+                  <div class="candidate-code">8714.99</div>
+                  <div class="candidate-desc">ส่วนประกอบและอุปกรณ์ของจักรยาน (พิกัด 87.14)</div>
+                </div>
+                <div class="candidate-score">
+                  <div class="candidate-bar"><div class="candidate-bar-fill" id="bar2"></div></div>
+                  <div class="candidate-pct" id="pct2">0%</div>
+                </div>
+              </div>
+
+              <p class="candidate-reason" id="candidateReason">เหตุผล: ภาพและคำอธิบายสินค้าระบุชัดเจนว่าเป็นจักรยานสองล้อ ไม่มีเครื่องยนต์ จึงตรงกับนิยามพิกัดย่อยนี้มากที่สุด</p>
+              <p class="candidate-hint">คลิกเลือกรหัสอื่นได้ หากผลลัพธ์อันดับแรกไม่ตรงกับสินค้าจริง ระบบจะปรับคำอธิบายและภาษีให้ตรงกับรหัสที่เลือกโดยอัตโนมัติ</p>
+            </div>
+
+            <div class="tax-card">
+              <p class="card-label">ข้อมูลภาษีอากร</p>
+              <table class="tax-table">
+                <tr><td>ฐานภาษี (มูลค่า CIF)</td><td>12,000.00 บาท</td></tr>
+                <tr><td>อัตราอากรขาเข้า (ตามมาตรา 12)</td><td id="dutyRateCell">30%</td></tr>
+                <tr><td>มูลค่าอากรขาเข้า</td><td id="dutyValue">0.00 บาท</td></tr>
+                <tr><td>ฐานภาษีมูลค่าเพิ่ม (CIF + อากรขาเข้า)</td><td id="vatBaseCell">15,600.00 บาท</td></tr>
+                <tr><td>ภาษีมูลค่าเพิ่ม (7%)</td><td id="vatValue">0.00 บาท</td></tr>
+                <tr class="is-total"><td>ยอดภาษีอากรรวมที่ต้องชำระ</td><td id="totalValue">0.00 บาท</td></tr>
+              </table>
+              <p class="duty-note" id="dutyNote">เลือกรหัสนี้แล้ว ระบบจะค้นหาอัตราอากรที่ตรงกับรหัสนี้จากฐานข้อมูล ITD ของกรมศุลกากร แล้วคำนวณภาษีอากรใหม่ให้โดยอัตโนมัติ</p>
+              <p class="tax-source">โครงสร้างพิกัดและอัตราอากรในตัวอย่างนี้อ้างอิงกรณีตัวอย่างพิกัด 8712.00.30 ตามมาตรา 12 ที่เผยแพร่ผ่านระบบ Integrated Tariff Database ของกรมศุลกากร (<a href="http://itd.customs.go.th/igtf/th/main_frame.jsp" target="_blank" rel="noopener">itd.customs.go.th</a>) อัตราภาษีมูลค่าเพิ่ม 7% เป็นอัตราที่บังคับใช้ในปัจจุบัน ควรตรวจสอบอัตราล่าสุดก่อนใช้งานจริง</p>
+            </div>
+          </div>
+
+          <!-- chat -->
+          <div class="card chat-card">
+            <p class="card-label">สนทนากับ AI เพื่อปรับปรุงผลลัพธ์</p>
+            <div class="chat-messages" id="chatMessages">
+              <div class="msg ai">สวัสดีครับ ผมเป็นผู้ช่วย AI สำหรับผลการจำแนกนี้ หากมีรายละเอียดสินค้าเพิ่มเติม หรือต้องการให้ปรับปรุงผลลัพธ์ สามารถเลือกคำถามด้านล่าง หรือพิมพ์คำถามเองได้เลยครับ</div>
+            </div>
+            <div class="chip-row" id="chipRow">
+              <button class="chip" id="chip1" onclick="askSuggestion()">ถ้าจักรยานคันนี้มีมอเตอร์ไฟฟ้าช่วยปั่นด้วย รหัส HS จะเปลี่ยนหรือไม่</button>
+            </div>
+            <div class="chat-input-row">
+              <input type="text" id="chatInput" placeholder="พิมพ์คำถามเพิ่มเติม...">
+              <button onclick="sendCustom()" aria-label="ส่งข้อความ">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="replay-row">
+            <button class="replay-btn" onclick="resetDemo()">เริ่มตัวอย่างใหม่</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="receive">
+  <div class="container">
+    <div class="section-head">
+      <p class="eyebrow">ภาพรวมระบบ</p>
+      <h2>สิ่งที่ลูกค้าจะได้รับจากระบบนี้</h2>
+      <p>ความสามารถหลักของระบบ ครอบคลุมตั้งแต่การรับข้อมูลสินค้าไปจนถึงการตรวจสอบผลลัพธ์ในระยะยาว</p>
+    </div>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M8 5l1.5-2h5L16 5"/></svg></div>
+        <h4>รับข้อมูลได้ทั้งข้อความและรูปภาพ</h4>
+        <p>กรอกชื่อสินค้า ยี่ห้อ และประเทศต้นทาง หรือถ่ายรูปสินค้าเพื่อให้ AI วิเคราะห์ร่วมกัน</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v6c0 1.7 3.6 3 8 3s8-1.3 8-3V5"/><path d="M4 11v6c0 1.7 3.6 3 8 3s8-1.3 8-3v-6"/></svg></div>
+        <h4>ฐานความรู้พิกัด AHTN 2022</h4>
+        <p>อ้างอิงโครงสร้างพิกัดอัตราศุลกากรอาเซียนฉบับปัจจุบัน พร้อมกฎการตีความและคำวินิจฉัยที่เกี่ยวข้อง</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="7" x2="16" y2="7"/><line x1="8" y1="11" x2="16" y2="11"/><line x1="8" y1="15" x2="12" y2="15"/></svg></div>
+        <h4>คำนวณฐานภาษีและภาษีอากรอัตโนมัติ</h4>
+        <p>แสดงฐานภาษี อัตราอากรขาเข้าตามรหัส HS ภาษีมูลค่าเพิ่ม และยอดรวมที่ต้องชำระในผลลัพธ์เดียว</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-8.4 8.4H4l1.6-3.6A8.4 8.4 0 1 1 21 11.5z"/></svg></div>
+        <h4>แชท AI สำหรับปรับปรุงผลลัพธ์</h4>
+        <p>ถามคำถามเพิ่มเติมเกี่ยวกับสินค้า แล้วให้ AI พิจารณาทบทวนหรือเสนอรหัสที่เหมาะสมกว่า</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg></div>
+        <h4>ปรับแต่งด้วยข้อมูลของลูกค้า</h4>
+        <p>นำข้อมูลใบขนสินค้าหรือประวัติการจำแนกในอดีตของลูกค้ามาใช้ปรับฐานความรู้ให้แม่นยำขึ้นตามสินค้าจริง</p>
+      </div>
+      <div class="feature-card">
+        <div class="f-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></div>
+        <h4>บันทึกประวัติเพื่อการตรวจสอบ</h4>
+        <p>ทุกการจำแนกถูกบันทึกพร้อมเวลาและเหตุผล เพื่อใช้เป็นหลักฐานประกอบการตรวจสอบภายหลัง</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <div class="f-left">
+      ตัวเลขและผลลัพธ์ในตัวอย่างนี้จัดทำขึ้นเพื่อสาธิตการทำงานของระบบเท่านั้น พิกัดและอัตราอากรอ้างอิงกรณีตัวอย่างจากระบบ Integrated Tariff Database กรมศุลกากร โปรดตรวจสอบอัตราล่าสุดที่ <a href="http://itd.customs.go.th/igtf/th/main_frame.jsp" target="_blank" rel="noopener">itd.customs.go.th</a> ก่อนนำไปใช้งานจริง
+    </div>
+    <div class="f-right">© 2026 AI HS CODE CLASSIFIER — DEMO</div>
+  </div>
+</footer>
+
+<script>
+  const analyzeBtn = document.getElementById('analyzeBtn');
+  const stateEmpty = document.getElementById('stateEmpty');
+  const stateProcessing = document.getElementById('stateProcessing');
+  const stateOutput = document.getElementById('stateOutput');
+  const statusText = document.getElementById('statusText');
+  const progressFill = document.getElementById('progressFill');
+  const steps = {
+    1: document.getElementById('step1'),
+    2: document.getElementById('step2'),
+    3: document.getElementById('step3'),
+    4: document.getElementById('step4')
+  };
+
+  const statusMessages = [
+    'กำลังอ่านข้อมูลสินค้าและรูปภาพ...',
+    'จับคู่กับฐานความรู้ AHTN 2022...',
+    'ตรวจสอบกฎการตีความพิกัด (GRI)...',
+    'คำนวณฐานภาษีและภาษีอากร...'
+  ];
+
+  const candidates = [
+    {
+      code: '8712.00.30',
+      desc: 'จักรยานสองล้อ ไม่มีเครื่องยนต์ช่วยขับเคลื่อน — อยู่ในพิกัดประเภท 87.12 จักรยานและรถถีบอื่น ๆ ที่ไม่มีเครื่องยนต์',
+      similarity: 96,
+      reason: 'ภาพและคำอธิบายสินค้าระบุชัดเจนว่าเป็นจักรยานสองล้อ ไม่มีเครื่องยนต์ จึงตรงกับนิยามพิกัดย่อยนี้มากที่สุด',
+      duty: { rate: '30%', dutyAmount: 3600, vatBase: 15600, vat: 1092, total: 4692 }
+    },
+    {
+      code: '8712.00.90',
+      desc: 'จักรยานหรือรถถีบอื่น ๆ ภายใต้พิกัดประเภท 87.12 ที่ไม่ใช่ประเภทสองล้อมาตรฐาน เช่น รถสามล้อขนส่งสินค้า',
+      similarity: 3,
+      reason: 'ใช้รหัสนี้หากสินค้าจริงเป็นจักรยานหรือรถถีบประเภทอื่นที่ไม่ใช่สองล้อมาตรฐาน แต่ยังอยู่ในพิกัดประเภท 87.12 เดียวกัน',
+      duty: null
+    },
+    {
+      code: '8714.99',
+      desc: 'ส่วนประกอบและอุปกรณ์ของจักรยาน ภายใต้พิกัดประเภท 87.14 ส่วนประกอบและอุปกรณ์ของยานพาหนะตามพิกัดประเภท 87.11–87.13',
+      similarity: 1,
+      reason: 'ใช้รหัสนี้หากนำเข้าเฉพาะชิ้นส่วนหรืออุปกรณ์ของจักรยาน เช่น เฟรม ล้อ หรือเบรก แยกจากตัวรถทั้งคัน',
+      duty: null
+    }
+  ];
+
+  function selectCandidate(i){
+    document.querySelectorAll('.candidate').forEach((el, idx) => {
+      el.classList.toggle('is-selected', idx === i);
+    });
+    const c = candidates[i];
+    document.getElementById('hsCode').textContent = c.code;
+    document.getElementById('hsDesc').textContent = c.desc;
+    document.getElementById('stampCode').textContent = c.code;
+    document.getElementById('candidateReason').textContent = 'เหตุผล: ' + c.reason;
+
+    const dutyNote = document.getElementById('dutyNote');
+    if(c.duty){
+      document.getElementById('dutyRateCell').textContent = c.duty.rate;
+      document.getElementById('vatBaseCell').textContent = c.duty.vatBase.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' บาท';
+      animateValue(document.getElementById('dutyValue'), c.duty.dutyAmount, 700, 2, ' บาท');
+      animateValue(document.getElementById('vatValue'), c.duty.vat, 800, 2, ' บาท');
+      animateValue(document.getElementById('totalValue'), c.duty.total, 900, 2, ' บาท');
+      dutyNote.style.display = 'none';
+    } else {
+      document.getElementById('dutyRateCell').textContent = 'ตรวจสอบจาก ITD ตามรหัสนี้';
+      document.getElementById('vatBaseCell').textContent = '—';
+      document.getElementById('dutyValue').textContent = '—';
+      document.getElementById('vatValue').textContent = '—';
+      document.getElementById('totalValue').textContent = '—';
+      dutyNote.style.display = 'block';
+    }
+  }
+
+  function setStep(n, status){
+    const el = steps[n];
+    el.classList.remove('is-active','is-done');
+    if(status) el.classList.add(status);
+  }
+
+  function showState(state){
+    [stateEmpty, stateProcessing, stateOutput].forEach(s => s.classList.remove('is-visible'));
+    state.classList.add('is-visible');
+  }
+
+  function animateValue(el, end, duration, decimals, suffix){
+    const start = 0;
+    const startTime = performance.now();
+    function step(now){
+      const progress = Math.min((now - startTime) / duration, 1);
+      const value = start + (end - start) * progress;
+      el.textContent = value.toLocaleString('en-US', {minimumFractionDigits:decimals, maximumFractionDigits:decimals}) + suffix;
+      if(progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  analyzeBtn.addEventListener('click', () => {
+    analyzeBtn.disabled = true;
+    setStep(1,'is-done');
+    setStep(2,'is-active');
+    showState(stateProcessing);
+
+    let msgIndex = 0;
+    statusText.textContent = statusMessages[0];
+    progressFill.style.width = '8%';
+
+    const interval = setInterval(() => {
+      msgIndex++;
+      if(msgIndex < statusMessages.length){
+        statusText.textContent = statusMessages[msgIndex];
+        progressFill.style.width = ((msgIndex+1)/statusMessages.length*100) + '%';
+      }
+    }, 500);
+
+    setTimeout(() => {
+      clearInterval(interval);
+      setStep(2,'is-done');
+      setStep(3,'is-active');
+      showState(stateOutput);
+
+      // reset stamp animation
+      const stamp = document.getElementById('stamp');
+      stamp.style.animation = 'none';
+      requestAnimationFrame(() => { stamp.style.animation = 'stampIn .6s cubic-bezier(.2,1.4,.4,1) forwards'; stamp.style.animationDelay = '.1s'; });
+
+      // reveal similarity bars for each candidate
+      candidates.forEach((c, i) => {
+        const bar = document.getElementById('bar'+i);
+        const pct = document.getElementById('pct'+i);
+        requestAnimationFrame(() => { bar.style.width = c.similarity + '%'; });
+        animateValue(pct, c.similarity, 900, 0, '%');
+      });
+
+      // populate the top-ranked candidate's details and tax figures
+      selectCandidate(0);
+
+      analyzeBtn.disabled = false;
+    }, 2100);
+  });
+
+  function askSuggestion(){
+    const chip = document.getElementById('chip1');
+    if(chip.disabled) return;
+    chip.disabled = true;
+
+    const messages = document.getElementById('chatMessages');
+
+    const userMsg = document.createElement('div');
+    userMsg.className = 'msg user';
+    userMsg.textContent = chip.textContent;
+    messages.appendChild(userMsg);
+
+    setStep(3,'is-done');
+    setStep(4,'is-active');
+
+    const typing = document.createElement('div');
+    typing.className = 'typing';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    messages.appendChild(typing);
+    messages.scrollTop = messages.scrollHeight;
+
+    setTimeout(() => {
+      typing.remove();
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'msg ai';
+      aiMsg.textContent = 'หากจักรยานคันนี้มีมอเตอร์ไฟฟ้าช่วยขับเคลื่อน มักจะไม่จัดอยู่ในพิกัด 87.12 อีกต่อไป แต่จะถูกพิจารณาในหมวดยานพาหนะที่มีมอเตอร์ไฟฟ้าช่วยขับเคลื่อนแทน เพื่อยืนยันรหัสที่ถูกต้อง ขอรายละเอียดกำลังมอเตอร์ (วัตต์) และความเร็วสูงสุดเพิ่มเติมได้ไหมครับ';
+      messages.appendChild(aiMsg);
+      messages.scrollTop = messages.scrollHeight;
+      setStep(4,'is-done');
+    }, 1300);
+  }
+
+  function sendCustom(){
+    const input = document.getElementById('chatInput');
+    const text = input.value.trim();
+    if(!text) return;
+    const messages = document.getElementById('chatMessages');
+
+    const userMsg = document.createElement('div');
+    userMsg.className = 'msg user';
+    userMsg.textContent = text;
+    messages.appendChild(userMsg);
+    input.value = '';
+
+    setStep(3,'is-done');
+    setStep(4,'is-active');
+
+    const typing = document.createElement('div');
+    typing.className = 'typing';
+    typing.innerHTML = '<span></span><span></span><span></span>';
+    messages.appendChild(typing);
+    messages.scrollTop = messages.scrollHeight;
+
+    setTimeout(() => {
+      typing.remove();
+      const aiMsg = document.createElement('div');
+      aiMsg.className = 'msg ai';
+      aiMsg.textContent = 'ขอบคุณสำหรับคำถามครับ ในระบบจริง AI จะนำคำถามนี้ไปประมวลผลร่วมกับฐานความรู้ AHTN 2022 และผลลัพธ์ก่อนหน้า เพื่อปรับปรุงคำตอบให้ตรงกับสินค้านี้มากที่สุด';
+      messages.appendChild(aiMsg);
+      messages.scrollTop = messages.scrollHeight;
+      setStep(4,'is-done');
+    }, 1300);
+  }
+
+  document.getElementById('chatInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter') sendCustom();
+  });
+
+  function resetDemo(){
+    showState(stateEmpty);
+    setStep(1,'is-active');
+    setStep(2,null);
+    setStep(3,null);
+    setStep(4,null);
+
+    candidates.forEach((c, i) => {
+      document.getElementById('bar'+i).style.width = '0%';
+      document.getElementById('pct'+i).textContent = '0%';
+    });
+    document.querySelectorAll('.candidate').forEach((el, idx) => {
+      el.classList.toggle('is-selected', idx === 0);
+    });
+
+    document.getElementById('hsCode').textContent = candidates[0].code;
+    document.getElementById('hsDesc').textContent = candidates[0].desc;
+    document.getElementById('stampCode').textContent = candidates[0].code;
+    document.getElementById('candidateReason').textContent = 'เหตุผล: ' + candidates[0].reason;
+
+    document.getElementById('dutyRateCell').textContent = candidates[0].duty.rate;
+    document.getElementById('vatBaseCell').textContent = candidates[0].duty.vatBase.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}) + ' บาท';
+    document.getElementById('dutyValue').textContent = '0.00 บาท';
+    document.getElementById('vatValue').textContent = '0.00 บาท';
+    document.getElementById('totalValue').textContent = '0.00 บาท';
+    document.getElementById('dutyNote').style.display = 'none';
+
+    const messages = document.getElementById('chatMessages');
+    messages.innerHTML = '<div class="msg ai">สวัสดีครับ ผมเป็นผู้ช่วย AI สำหรับผลการจำแนกนี้ หากมีรายละเอียดสินค้าเพิ่มเติม หรือต้องการให้ปรับปรุงผลลัพธ์ สามารถเลือกคำถามด้านล่าง หรือพิมพ์คำถามเองได้เลยครับ</div>';
+    const chip = document.getElementById('chip1');
+    chip.disabled = false;
+
+    analyzeBtn.disabled = false;
+  }
+</script>
+
+</body>
+</html>
