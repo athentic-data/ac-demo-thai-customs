@@ -210,27 +210,6 @@
   .output-top .result-main h3{font-size:13px;color:var(--muted);margin:0 0 6px;font-weight:500;letter-spacing:.04em;}
   .output-top .result-main .hs-code{font-family:var(--font-mono);font-size:34px;font-weight:600;letter-spacing:.02em;}
   .output-top .result-main .hs-desc{font-size:14.5px;color:var(--muted);margin-top:6px;max-width:46ch;}
-
-  /* stamp */
-  .stamp{
-    width:118px;height:118px;border-radius:50%;flex:none;
-    border:3px solid var(--stamp);position:relative;
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    color:var(--stamp);transform:rotate(-9deg) scale(.6);opacity:0;
-    animation:stampIn .6s cubic-bezier(.2,1.4,.4,1) forwards;animation-delay:.15s;
-  }
-  .stamp::before{
-    content:'';position:absolute;inset:7px;border:1px solid var(--stamp);border-radius:50%;
-  }
-  .stamp .stamp-top{font-family:var(--font-mono);font-size:9px;letter-spacing:.14em;margin-top:14px;}
-  .stamp .stamp-code{font-family:var(--font-mono);font-size:15px;font-weight:700;margin:4px 0;}
-  .stamp .stamp-bottom{font-family:var(--font-mono);font-size:8.5px;letter-spacing:.08em;text-align:center;line-height:1.3;margin-bottom:12px;}
-  @keyframes stampIn{
-    0%{opacity:0;transform:rotate(-22deg) scale(1.5);}
-    60%{opacity:1;transform:rotate(-6deg) scale(.95);}
-    100%{opacity:1;transform:rotate(-9deg) scale(1);}
-  }
-
   .candidates{margin:18px 0 14px;}
   .candidate{
     display:flex;align-items:center;gap:14px;padding:14px 16px;
@@ -526,11 +505,6 @@
                 <div class="hs-code" id="hsCode">8712.00.30</div>
                 <div class="hs-desc" id="hsDesc">จักรยานสองล้อ ไม่มีเครื่องยนต์ช่วยขับเคลื่อน — อยู่ในพิกัดประเภท 87.12 จักรยานและรถถีบอื่น ๆ ที่ไม่มีเครื่องยนต์</div>
               </div>
-              <div class="stamp" id="stamp">
-                <div class="stamp-top">AHTN 2022</div>
-                <div class="stamp-code" id="stampCode">8712.00.30</div>
-                <div class="stamp-bottom">ผลการจำแนก<br>ประเภทเบื้องต้น</div>
-              </div>
             </div>
 
             <div class="candidates">
@@ -622,7 +596,7 @@
   <div class="container">
     <div class="section-head">
       <p class="eyebrow">ภาพรวมระบบ</p>
-      <h2>สิ่งที่ลูกค้าจะได้รับจากระบบนี้</h2>
+      <h2>Main Features</h2>
       <p>ความสามารถหลักของระบบ ครอบคลุมตั้งแต่การรับข้อมูลสินค้าไปจนถึงการตรวจสอบผลลัพธ์ในระยะยาว</p>
     </div>
     <div class="features-grid">
@@ -721,7 +695,6 @@
     const c = candidates[i];
     document.getElementById('hsCode').textContent = c.code;
     document.getElementById('hsDesc').textContent = c.desc;
-    document.getElementById('stampCode').textContent = c.code;
     document.getElementById('candidateReason').textContent = 'เหตุผล: ' + c.reason;
 
     const dutyNote = document.getElementById('dutyNote');
@@ -788,11 +761,6 @@
       setStep(2,'is-done');
       setStep(3,'is-active');
       showState(stateOutput);
-
-      // reset stamp animation
-      const stamp = document.getElementById('stamp');
-      stamp.style.animation = 'none';
-      requestAnimationFrame(() => { stamp.style.animation = 'stampIn .6s cubic-bezier(.2,1.4,.4,1) forwards'; stamp.style.animationDelay = '.1s'; });
 
       // reveal similarity bars for each candidate
       candidates.forEach((c, i) => {
@@ -894,7 +862,6 @@
 
     document.getElementById('hsCode').textContent = candidates[0].code;
     document.getElementById('hsDesc').textContent = candidates[0].desc;
-    document.getElementById('stampCode').textContent = candidates[0].code;
     document.getElementById('candidateReason').textContent = 'เหตุผล: ' + candidates[0].reason;
 
     document.getElementById('dutyRateCell').textContent = candidates[0].duty.rate;
