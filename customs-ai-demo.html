@@ -385,23 +385,20 @@
         <p class="card-label">ข้อมูลสินค้าตัวอย่าง</p>
         <div class="photo-frame">
           <svg viewBox="0 0 200 140" fill="none" stroke="#6E7B89" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="55" cy="100" r="28"/>
-            <circle cx="150" cy="100" r="28"/>
-            <path d="M55 100 L95 45 L150 100"/>
-            <path d="M95 45 L80 100"/>
-            <path d="M95 45 L112 45"/>
-            <path d="M150 100 L168 100"/>
-            <path d="M55 100 L40 100"/>
+            <ellipse cx="72" cy="58" rx="22" ry="26"/>
+            <rect x="62" y="78" width="20" height="34" rx="9"/>
+            <ellipse cx="128" cy="58" rx="22" ry="26"/>
+            <rect x="118" y="78" width="20" height="34" rx="9"/>
           </svg>
           <span class="photo-caption">ภาพสินค้าที่ผู้ใช้อัปโหลด</span>
         </div>
         <div class="field">
           <label>ชื่อสินค้า</label>
-          <div class="value">จักรยานเสือหมอบ 2 ล้อ ไม่มีเครื่องยนต์</div>
+          <div class="value">หูฟังบลูทูธไร้สาย แบบ True Wireless</div>
         </div>
         <div class="field">
           <label>ยี่ห้อ (ตัวอย่าง)</label>
-          <div class="value">VELOCYCLE</div>
+          <div class="value">AUDIOWAVE</div>
         </div>
         <div class="field">
           <label>ประเทศต้นทาง</label>
@@ -409,7 +406,7 @@
         </div>
         <div class="field">
           <label>มูลค่าสินค้า (ราคา CIF)</label>
-          <div class="value mono">12,000.00 บาท</div>
+          <div class="value mono">1,800.00 บาท</div>
         </div>
         <button class="analyze-btn" id="analyzeBtn">
           วิเคราะห์ด้วย AI
@@ -502,8 +499,8 @@
             <div class="output-top">
               <div class="result-main">
                 <h3>รหัส HS ที่เลือก</h3>
-                <div class="hs-code" id="hsCode">8712.00.30</div>
-                <div class="hs-desc" id="hsDesc">จักรยานสองล้อ ไม่มีเครื่องยนต์ช่วยขับเคลื่อน — อยู่ในพิกัดประเภท 87.12 จักรยานและรถถีบอื่น ๆ ที่ไม่มีเครื่องยนต์</div>
+                <div class="hs-code" id="hsCode">8518.30</div>
+                <div class="hs-desc" id="hsDesc">หูฟังแบบสอดหูหรือครอบหู ใช้สำหรับฟังเสียงโดยตรง — อยู่ในพิกัดประเภท 85.18 ไมโครโฟน ลำโพง และหูฟัง</div>
               </div>
             </div>
 
@@ -513,8 +510,8 @@
               <div class="candidate is-selected" onclick="selectCandidate(0)">
                 <div class="candidate-rank">1</div>
                 <div class="candidate-main">
-                  <div class="candidate-code">8712.00.30</div>
-                  <div class="candidate-desc">จักรยานสองล้อ ไม่มีเครื่องยนต์ช่วยขับเคลื่อน</div>
+                  <div class="candidate-code">8518.30</div>
+                  <div class="candidate-desc">หูฟังสำหรับฟังเสียง (พิกัด 85.18)</div>
                 </div>
                 <div class="candidate-score">
                   <div class="candidate-bar"><div class="candidate-bar-fill" id="bar0"></div></div>
@@ -525,8 +522,8 @@
               <div class="candidate" onclick="selectCandidate(1)">
                 <div class="candidate-rank">2</div>
                 <div class="candidate-main">
-                  <div class="candidate-code">8712.00.90</div>
-                  <div class="candidate-desc">จักรยาน/รถถีบอื่น ๆ ในพิกัด 87.12 ที่ไม่ใช่สองล้อมาตรฐาน</div>
+                  <div class="candidate-code">8517.62</div>
+                  <div class="candidate-desc">เครื่องรับส่งสัญญาณไร้สาย (พิกัด 85.17)</div>
                 </div>
                 <div class="candidate-score">
                   <div class="candidate-bar"><div class="candidate-bar-fill" id="bar1"></div></div>
@@ -537,8 +534,8 @@
               <div class="candidate" onclick="selectCandidate(2)">
                 <div class="candidate-rank">3</div>
                 <div class="candidate-main">
-                  <div class="candidate-code">8714.99</div>
-                  <div class="candidate-desc">ส่วนประกอบและอุปกรณ์ของจักรยาน (พิกัด 87.14)</div>
+                  <div class="candidate-code">8518.90</div>
+                  <div class="candidate-desc">ส่วนประกอบของเครื่องหูฟัง เช่น เคสชาร์จ (พิกัด 85.18)</div>
                 </div>
                 <div class="candidate-score">
                   <div class="candidate-bar"><div class="candidate-bar-fill" id="bar2"></div></div>
@@ -546,22 +543,22 @@
                 </div>
               </div>
 
-              <p class="candidate-reason" id="candidateReason">เหตุผล: ภาพและคำอธิบายสินค้าระบุชัดเจนว่าเป็นจักรยานสองล้อ ไม่มีเครื่องยนต์ จึงตรงกับนิยามพิกัดย่อยนี้มากที่สุด</p>
+              <p class="candidate-reason" id="candidateReason">เหตุผล: สินค้านี้ทำหน้าที่หลักเป็นหูฟังสำหรับฟังเสียง การเชื่อมต่อผ่านบลูทูธเป็นเพียงวิธีรับสัญญาณ ไม่ใช่ฟังก์ชันหลักของสินค้า จึงตรงกับพิกัดหูฟังมากที่สุด</p>
               <p class="candidate-hint">คลิกเลือกรหัสอื่นได้ หากผลลัพธ์อันดับแรกไม่ตรงกับสินค้าจริง ระบบจะปรับคำอธิบายและภาษีให้ตรงกับรหัสที่เลือกโดยอัตโนมัติ</p>
             </div>
 
             <div class="tax-card">
               <p class="card-label">ข้อมูลภาษีอากร</p>
               <table class="tax-table">
-                <tr><td>ฐานภาษี (มูลค่า CIF)</td><td>12,000.00 บาท</td></tr>
-                <tr><td>อัตราอากรขาเข้า (ตามมาตรา 12)</td><td id="dutyRateCell">30%</td></tr>
+                <tr><td>ฐานภาษี (มูลค่า CIF)</td><td>1,800.00 บาท</td></tr>
+                <tr><td>อัตราอากรขาเข้า (ตามมาตรา 12)</td><td id="dutyRateCell">10%</td></tr>
                 <tr><td>มูลค่าอากรขาเข้า</td><td id="dutyValue">0.00 บาท</td></tr>
-                <tr><td>ฐานภาษีมูลค่าเพิ่ม (CIF + อากรขาเข้า)</td><td id="vatBaseCell">15,600.00 บาท</td></tr>
+                <tr><td>ฐานภาษีมูลค่าเพิ่ม (CIF + อากรขาเข้า)</td><td id="vatBaseCell">1,980.00 บาท</td></tr>
                 <tr><td>ภาษีมูลค่าเพิ่ม (7%)</td><td id="vatValue">0.00 บาท</td></tr>
                 <tr class="is-total"><td>ยอดภาษีอากรรวมที่ต้องชำระ</td><td id="totalValue">0.00 บาท</td></tr>
               </table>
               <p class="duty-note" id="dutyNote">เลือกรหัสนี้แล้ว ระบบจะค้นหาอัตราอากรที่ตรงกับรหัสนี้จากฐานข้อมูล ITD ของกรมศุลกากร แล้วคำนวณภาษีอากรใหม่ให้โดยอัตโนมัติ</p>
-              <p class="tax-source">โครงสร้างพิกัดและอัตราอากรในตัวอย่างนี้อ้างอิงกรณีตัวอย่างพิกัด 8712.00.30 ตามมาตรา 12 ที่เผยแพร่ผ่านระบบ Integrated Tariff Database ของกรมศุลกากร (<a href="http://itd.customs.go.th/igtf/th/main_frame.jsp" target="_blank" rel="noopener">itd.customs.go.th</a>) อัตราภาษีมูลค่าเพิ่ม 7% เป็นอัตราที่บังคับใช้ในปัจจุบัน ควรตรวจสอบอัตราล่าสุดก่อนใช้งานจริง</p>
+              <p class="tax-source">อัตราอากรขาเข้า 10% ในตัวอย่างนี้อ้างอิงหมวดสินค้าอิเล็กทรอนิกส์ทั่วไป เช่น หูฟังและพาวเวอร์แบงก์ ตามข้อมูลที่เผยแพร่ทั่วไป โครงสร้างพิกัดอ้างอิงระบบ Integrated Tariff Database ของกรมศุลกากร (<a href="http://itd.customs.go.th/igtf/th/main_frame.jsp" target="_blank" rel="noopener">itd.customs.go.th</a>) ควรตรวจสอบรหัสและอัตราที่แท้จริงของสินค้านั้น ๆ จากระบบนี้ก่อนใช้งานจริง</p>
             </div>
           </div>
 
@@ -572,7 +569,7 @@
               <div class="msg ai">สวัสดีครับ ผมเป็นผู้ช่วย AI สำหรับผลการจำแนกนี้ หากมีรายละเอียดสินค้าเพิ่มเติม หรือต้องการให้ปรับปรุงผลลัพธ์ สามารถเลือกคำถามด้านล่าง หรือพิมพ์คำถามเองได้เลยครับ</div>
             </div>
             <div class="chip-row" id="chipRow">
-              <button class="chip" id="chip1" onclick="askSuggestion()">ถ้าจักรยานคันนี้มีมอเตอร์ไฟฟ้าช่วยปั่นด้วย รหัส HS จะเปลี่ยนหรือไม่</button>
+              <button class="chip" id="chip1" onclick="askSuggestion()">ถ้าหูฟังคู่นี้ใช้สนทนาโทรศัพท์ได้ด้วย รหัส HS จะเปลี่ยนหรือไม่</button>
             </div>
             <div class="chat-input-row">
               <input type="text" id="chatInput" placeholder="พิมพ์คำถามเพิ่มเติม...">
@@ -666,24 +663,24 @@
 
   const candidates = [
     {
-      code: '8712.00.30',
-      desc: 'จักรยานสองล้อ ไม่มีเครื่องยนต์ช่วยขับเคลื่อน — อยู่ในพิกัดประเภท 87.12 จักรยานและรถถีบอื่น ๆ ที่ไม่มีเครื่องยนต์',
-      similarity: 96,
-      reason: 'ภาพและคำอธิบายสินค้าระบุชัดเจนว่าเป็นจักรยานสองล้อ ไม่มีเครื่องยนต์ จึงตรงกับนิยามพิกัดย่อยนี้มากที่สุด',
-      duty: { rate: '30%', dutyAmount: 3600, vatBase: 15600, vat: 1092, total: 4692 }
+      code: '8518.30',
+      desc: 'หูฟังแบบสอดหูหรือครอบหู ใช้สำหรับฟังเสียงโดยตรง — อยู่ในพิกัดประเภท 85.18 ไมโครโฟน ลำโพง และหูฟัง',
+      similarity: 72,
+      reason: 'สินค้านี้ทำหน้าที่หลักเป็นหูฟังสำหรับฟังเสียง การเชื่อมต่อผ่านบลูทูธเป็นเพียงวิธีรับสัญญาณ ไม่ใช่ฟังก์ชันหลักของสินค้า จึงตรงกับพิกัดหูฟังมากที่สุด',
+      duty: { rate: '10%', dutyAmount: 180, vatBase: 1980, vat: 138.6, total: 318.6 }
     },
     {
-      code: '8712.00.90',
-      desc: 'จักรยานหรือรถถีบอื่น ๆ ภายใต้พิกัดประเภท 87.12 ที่ไม่ใช่ประเภทสองล้อมาตรฐาน เช่น รถสามล้อขนส่งสินค้า',
-      similarity: 3,
-      reason: 'ใช้รหัสนี้หากสินค้าจริงเป็นจักรยานหรือรถถีบประเภทอื่นที่ไม่ใช่สองล้อมาตรฐาน แต่ยังอยู่ในพิกัดประเภท 87.12 เดียวกัน',
+      code: '8517.62',
+      desc: 'เครื่องรับส่งสัญญาณเสียงและข้อมูลแบบไร้สาย (Bluetooth) ภายใต้พิกัดประเภท 85.17 เครื่องสำหรับโทรคมนาคม',
+      similarity: 21,
+      reason: 'ใช้รหัสนี้หากพิจารณาว่าฟังก์ชันรับส่งสัญญาณไร้สายเป็นคุณสมบัติหลักของสินค้า ซึ่งเป็นประเด็นที่มีการตีความแตกต่างกันในหลายประเทศสำหรับหูฟังไร้สายแบบ True Wireless',
       duty: null
     },
     {
-      code: '8714.99',
-      desc: 'ส่วนประกอบและอุปกรณ์ของจักรยาน ภายใต้พิกัดประเภท 87.14 ส่วนประกอบและอุปกรณ์ของยานพาหนะตามพิกัดประเภท 87.11–87.13',
-      similarity: 1,
-      reason: 'ใช้รหัสนี้หากนำเข้าเฉพาะชิ้นส่วนหรืออุปกรณ์ของจักรยาน เช่น เฟรม ล้อ หรือเบรก แยกจากตัวรถทั้งคัน',
+      code: '8518.90',
+      desc: 'ส่วนประกอบและอุปกรณ์ของเครื่องไมโครโฟน ลำโพง หรือหูฟัง ภายใต้พิกัดประเภท 85.18 เช่น เคสชาร์จที่นำเข้าแยกจากตัวหูฟัง',
+      similarity: 7,
+      reason: 'ใช้รหัสนี้หากนำเข้าเฉพาะเคสชาร์จหรืออุปกรณ์เสริม โดยไม่มีตัวหูฟังรวมอยู่ในชุดเดียวกัน',
       duty: null
     }
   ];
@@ -802,7 +799,7 @@
       typing.remove();
       const aiMsg = document.createElement('div');
       aiMsg.className = 'msg ai';
-      aiMsg.textContent = 'หากจักรยานคันนี้มีมอเตอร์ไฟฟ้าช่วยขับเคลื่อน มักจะไม่จัดอยู่ในพิกัด 87.12 อีกต่อไป แต่จะถูกพิจารณาในหมวดยานพาหนะที่มีมอเตอร์ไฟฟ้าช่วยขับเคลื่อนแทน เพื่อยืนยันรหัสที่ถูกต้อง ขอรายละเอียดกำลังมอเตอร์ (วัตต์) และความเร็วสูงสุดเพิ่มเติมได้ไหมครับ';
+      aiMsg.textContent = 'หากหูฟังคู่นี้มีไมโครโฟนสำหรับสนทนาโทรศัพท์ด้วย โดยทั่วไปยังไม่เปลี่ยนรหัสหลัก เนื่องจากฟังก์ชันการฟังเสียงยังถือเป็นวัตถุประสงค์หลักของสินค้า แต่หากหูฟังนี้เน้นการรับสายและสนทนาเป็นหลักมากกว่าฟังเพลง อาจต้องพิจารณารหัส 8517.62 แทน ขอช่วยระบุเพิ่มเติมว่าสินค้านี้วางตลาดในฐานะหูฟังเพื่อความบันเทิง หรือชุดหูฟังสำหรับการประชุมทางไกลได้ไหมครับ';
       messages.appendChild(aiMsg);
       messages.scrollTop = messages.scrollHeight;
       setStep(4,'is-done');
